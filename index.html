@@ -1,0 +1,995 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<!-- [Complete HTML file with Google Sheets integration] -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --paper:#EEF1EA;
+  --paper-raised:#F8F9F4;
+  --ink:#1F2A24;
+  --ink-soft:#5B655D;
+  --navy:#152A3A;
+  --navy-soft:#25425A;
+  --teal:#2F7A6F;
+  --teal-soft:#E4F0EC;
+  --amber:#C98A3B;
+  --amber-soft:#F7EBD8;
+  --clay:#B5533C;
+  --clay-soft:#F5E4DE;
+  --line:#D6D9CC;
+  --stitch: repeating-linear-gradient(90deg, var(--ink-soft) 0, var(--ink-soft) 5px, transparent 5px, transparent 10px);
+}
+
+*{box-sizing:border-box;}
+body,html{margin:0;padding:0;}
+
+.wr-root{
+  font-family:'Inter',sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  min-height:100%;
+  padding:0;
+}
+
+.wr-shell{
+  max-width:1100px;
+  margin:0 auto;
+  padding:28px 20px 60px;
+}
+
+.wr-header{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:16px;
+  padding:22px 26px;
+  background:var(--navy);
+  border-radius:10px 10px 0 0;
+  color:#F4F1E6;
+}
+.wr-header h1{
+  font-family:'Fraunces',serif;
+  font-weight:700;
+  font-size:28px;
+  margin:0 0 4px;
+  letter-spacing:0.2px;
+}
+.wr-header .wr-sub{
+  font-size:12.5px;
+  color:#C9D3D8;
+  font-family:'IBM Plex Mono',monospace;
+  letter-spacing:0.3px;
+}
+.wr-header-right{
+  text-align:right;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:#9FB0B8;
+}
+
+.wr-tabs{
+  display:flex;
+  gap:2px;
+  background:var(--navy-soft);
+  padding:0 26px;
+}
+.wr-tab{
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:14.5px;
+  padding:12px 22px;
+  color:#DDE6E5;
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  border-radius:8px 8px 0 0;
+  position:relative;
+  top:1px;
+}
+.wr-tab.active{
+  background:var(--paper-raised);
+  color:var(--navy);
+}
+
+.wr-body{
+  background:var(--paper-raised);
+  border-radius:0 0 10px 10px;
+  box-shadow:0 1px 3px rgba(20,30,25,0.08), 0 8px 24px rgba(20,30,25,0.06);
+  padding:30px 30px 36px;
+}
+
+.wr-stitch{
+  height:2px;
+  background:var(--stitch);
+  opacity:0.4;
+  margin:26px 0;
+}
+
+/* ---- Form ---- */
+.wr-section-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--teal);
+  margin:0 0 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.wr-section-label::after{
+  content:'';
+  flex:1;
+  height:1px;
+  background:var(--line);
+}
+
+.wr-grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:16px 20px;
+}
+.wr-grid.wr-grid-3{grid-template-columns:repeat(3,1fr);}
+.wr-field{display:flex;flex-direction:column;gap:6px;}
+.wr-field.wr-span2{grid-column:span 2;}
+.wr-field label{
+  font-size:12px;
+  font-weight:600;
+  color:var(--ink-soft);
+  letter-spacing:0.2px;
+}
+.wr-field input, .wr-field select, .wr-field textarea{
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  padding:9px 11px;
+  border:1px solid var(--line);
+  border-radius:6px;
+  background:#fff;
+  color:var(--ink);
+  outline:none;
+}
+.wr-field input:focus, .wr-field select:focus, .wr-field textarea:focus{
+  border-color:var(--teal);
+  box-shadow:0 0 0 3px var(--teal-soft);
+}
+.wr-field input[readonly]{
+  background:var(--amber-soft);
+  color:var(--navy);
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:600;
+}
+.wr-field textarea{resize:vertical;min-height:56px;}
+
+.wr-amount-input{position:relative;}
+.wr-amount-input input{padding-left:26px;}
+.wr-amount-input::before{
+  content:'₹';
+  position:absolute;
+  left:11px; top:9px;
+  color:var(--ink-soft);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:14px;
+}
+
+.wr-submit-row{
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+  margin-top:24px;
+}
+.wr-btn{
+  font-family:'Inter',sans-serif;
+  font-weight:600;
+  font-size:13.5px;
+  padding:11px 22px;
+  border-radius:7px;
+  border:none;
+  cursor:pointer;
+}
+.wr-btn-primary{background:var(--teal); color:#fff;}
+.wr-btn-primary:hover{background:#276358;}
+.wr-btn-ghost{background:transparent; color:var(--ink-soft); border:1px solid var(--line);}
+.wr-btn-ghost:hover{background:var(--paper);}
+
+.wr-toast{
+  position:fixed;
+  bottom:22px; left:50%; transform:translateX(-50%);
+  background:var(--navy); color:#F4F1E6;
+  padding:10px 20px; border-radius:8px;
+  font-size:13px; font-family:'Inter',sans-serif;
+  box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  opacity:0; pointer-events:none;
+  transition:opacity 0.25s;
+  z-index:50;
+}
+.wr-toast.show{opacity:1;}
+
+/* ---- Dashboard ---- */
+.wr-kpi-row{
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:14px;
+  margin-bottom:26px;
+}
+.wr-kpi{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:14px 16px;
+}
+.wr-kpi .wr-kpi-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--ink-soft);
+  margin-bottom:6px;
+}
+.wr-kpi .wr-kpi-value{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:20px;
+  font-weight:600;
+  color:var(--navy);
+}
+.wr-kpi.wr-kpi-clay .wr-kpi-value{color:var(--clay);}
+.wr-kpi.wr-kpi-teal .wr-kpi-value{color:var(--teal);}
+
+.wr-charts-row{
+  display:grid;
+  grid-template-columns:1fr 1fr 1.2fr;
+  gap:18px;
+  margin-bottom:28px;
+}
+.wr-chart-card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:16px;
+}
+.wr-chart-title{
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:14px;
+  color:var(--navy);
+  margin:0 0 10px;
+}
+.wr-legend{
+  display:flex; flex-direction:column; gap:6px; margin-top:10px;
+}
+.wr-legend-item{
+  display:flex; align-items:center; gap:8px;
+  font-size:12px; color:var(--ink-soft);
+}
+.wr-legend-swatch{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.wr-legend-item b{color:var(--ink); font-family:'IBM Plex Mono',monospace; margin-left:auto;}
+
+.wr-filter-row{
+  display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap;
+}
+.wr-filter-row input, .wr-filter-row select{
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:6px;
+  background:#fff;
+}
+.wr-filter-row input{flex:1; min-width:180px;}
+
+.wr-table-wrap{
+  border:1px solid var(--line);
+  border-radius:8px;
+  overflow:auto;
+  max-height:420px;
+}
+table.wr-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12.5px;
+}
+table.wr-table th{
+  position:sticky; top:0;
+  background:var(--navy);
+  color:#F4F1E6;
+  text-align:left;
+  padding:9px 10px;
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:500;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  white-space:nowrap;
+}
+table.wr-table td{
+  padding:8px 10px;
+  border-bottom:1px solid var(--line);
+  color:var(--ink);
+  white-space:nowrap;
+}
+table.wr-table tr:hover td{background:var(--paper);}
+.wr-num{font-family:'IBM Plex Mono',monospace; text-align:right;}
+.wr-pill{
+  font-size:10.5px; padding:3px 8px; border-radius:20px; font-weight:600;
+  display:inline-block;
+}
+.wr-pill-pending{background:var(--amber-soft); color:var(--amber);}
+.wr-pill-progress{background:#E4EEF7; color:#2E6DA4;}
+.wr-pill-completed{background:var(--teal-soft); color:var(--teal);}
+.wr-pill-notinvoiced{background:#EDEDED; color:#777;}
+.wr-pill-invoiced{background:#E4EEF7; color:#2E6DA4;}
+.wr-pill-paid{background:var(--teal-soft); color:var(--teal);}
+.wr-pill-partial{background:var(--amber-soft); color:var(--amber);}
+.wr-del-btn{
+  background:none; border:none; cursor:pointer; color:var(--clay); font-size:14px;
+}
+.wr-empty{
+  text-align:center; padding:40px 20px; color:var(--ink-soft); font-size:13.5px;
+}
+.wr-empty b{display:block; font-family:'Fraunces',serif; font-size:17px; color:var(--navy); margin-bottom:6px;}
+
+.wr-dash-footer{
+  display:flex; justify-content:space-between; align-items:center; margin-top:16px;
+}
+.wr-note{
+  font-size:11.5px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace;
+}
+
+@media (max-width:760px){
+  .wr-grid{grid-template-columns:1fr;}
+  .wr-grid.wr-grid-3{grid-template-columns:1fr;}
+  .wr-field.wr-span2{grid-column:span 1;}
+  .wr-kpi-row{grid-template-columns:repeat(2,1fr);}
+  .wr-charts-row{grid-template-columns:1fr;}
+}
+</style>
+
+<div class="wr-root">
+<div class="wr-shell">
+
+  <div class="wr-header">
+    <div>
+      <h1>Work Control</h1>
+      <div class="wr-sub">ENGAGEMENT &amp; BILLING LOG</div>
+    </div>
+    <div class="wr-header-right" id="wr-live-count">— entries logged</div>
+  </div>
+
+  <div id="wr-sheet-status" style="display:flex; justify-content:space-between; align-items:center; padding:8px 26px; background:var(--navy-soft); color:#DDE6E5; font-family:'IBM Plex Mono',monospace; font-size:11px;">
+    <span id="wr-sheet-status-text">Connecting to Google Sheet…</span>
+    <button onclick="wrLoadFromSheet()" style="background:none;border:1px solid #4A6478;color:#DDE6E5;border-radius:5px;padding:3px 10px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;cursor:pointer;">Refresh</button>
+  </div>
+
+  <div class="wr-tabs">
+    <button class="wr-tab active" id="wr-tab-form" onclick="wrSwitchTab('form')">New Entry</button>
+    <button class="wr-tab" id="wr-tab-dash" onclick="wrSwitchTab('dash')">Dashboard</button>
+  </div>
+
+  <div class="wr-body">
+
+    <!-- FORM VIEW -->
+    <div id="wr-view-form">
+      <div class="wr-section-label">Engagement</div>
+      <div class="wr-grid wr-grid-3">
+        <div class="wr-field">
+          <label>Date</label>
+          <input type="date" id="f-date">
+        </div>
+        <div class="wr-field">
+          <label>Work Type</label>
+          <input type="text" id="f-workType" list="wr-worktype-list" placeholder="e.g. GST Return">
+          <datalist id="wr-worktype-list">
+            <option value="GST Return">
+            <option value="Income Tax Return">
+            <option value="TDS Return">
+            <option value="Statutory Audit">
+            <option value="Tax Audit">
+            <option value="ROC Filing">
+            <option value="Bookkeeping">
+            <option value="Advisory">
+          </datalist>
+        </div>
+        <div class="wr-field">
+          <label>Group</label>
+          <input type="text" id="f-group" placeholder="Client group">
+        </div>
+        <div class="wr-field wr-span2">
+          <label>Client Name</label>
+          <input type="text" id="f-clientName" placeholder="Client name">
+        </div>
+        <div class="wr-field">
+          <label>Work Done By</label>
+          <input type="text" id="f-workDoneBy" placeholder="Staff name">
+        </div>
+        <div class="wr-field wr-span2">
+          <label>Work Description</label>
+          <textarea id="f-workDescription" placeholder="Brief description of work"></textarea>
+        </div>
+      </div>
+
+      <div class="wr-stitch"></div>
+
+      <div class="wr-section-label">UDIN</div>
+      <div class="wr-grid wr-grid-3">
+        <div class="wr-field">
+          <label>UDIN Applicability</label>
+          <select id="f-udinApplicability" onchange="wrToggleUdin()">
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+        <div class="wr-field wr-span2" id="f-udinNo-wrap" style="display:none;">
+          <label>UDIN No</label>
+          <input type="text" id="f-udinNo" placeholder="UDIN number">
+        </div>
+      </div>
+
+      <div class="wr-stitch"></div>
+
+      <div class="wr-section-label">Financials</div>
+      <div class="wr-grid wr-grid-3">
+        <div class="wr-field">
+          <label>Amount</label>
+          <div class="wr-amount-input"><input type="number" id="f-amount" placeholder="0" oninput="wrRecalc()"></div>
+        </div>
+        <div class="wr-field">
+          <label>Challan Amount</label>
+          <div class="wr-amount-input"><input type="number" id="f-challanAmount" placeholder="0" oninput="wrRecalc()"></div>
+        </div>
+        <div class="wr-field">
+          <label>Total Amount</label>
+          <div class="wr-amount-input"><input type="number" id="f-totalAmount" readonly></div>
+        </div>
+        <div class="wr-field">
+          <label>Work Status</label>
+          <select id="f-workStatus">
+            <option>Pending</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="wr-stitch"></div>
+
+      <div class="wr-section-label">Invoicing</div>
+      <div class="wr-grid wr-grid-3">
+        <div class="wr-field">
+          <label>Invoice Status</label>
+          <select id="f-invoiceStatus">
+            <option>Not Invoiced</option>
+            <option>Invoiced</option>
+            <option>Partially Paid</option>
+            <option>Paid</option>
+          </select>
+        </div>
+        <div class="wr-field">
+          <label>Invoice Date</label>
+          <input type="date" id="f-invoiceDate">
+        </div>
+        <div class="wr-field">
+          <label>Invoice From</label>
+          <input type="text" id="f-invoiceFrom" placeholder="Issuing office/branch">
+        </div>
+        <div class="wr-field">
+          <label>Invoice Amount</label>
+          <div class="wr-amount-input"><input type="number" id="f-invoiceAmount" placeholder="0" oninput="wrRecalc()"></div>
+        </div>
+        <div class="wr-field">
+          <label>Amount Received</label>
+          <div class="wr-amount-input"><input type="number" id="f-amountReceived" placeholder="0" oninput="wrRecalc()"></div>
+        </div>
+        <div class="wr-field">
+          <label>Balance Due</label>
+          <div class="wr-amount-input"><input type="number" id="f-balanceDue" readonly></div>
+        </div>
+      </div>
+
+      <div class="wr-stitch"></div>
+
+      <div class="wr-section-label">Notes</div>
+      <div class="wr-grid">
+        <div class="wr-field wr-span2">
+          <label>Remarks</label>
+          <textarea id="f-remarks" placeholder="Any additional remarks"></textarea>
+        </div>
+      </div>
+
+      <div class="wr-submit-row">
+        <button class="wr-btn wr-btn-ghost" onclick="wrClearForm()">Clear</button>
+        <button class="wr-btn wr-btn-primary" onclick="wrSubmitEntry()">Save Entry</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="wr-view-dash" style="display:none;">
+      <div class="wr-kpi-row" id="wr-kpi-row"></div>
+
+      <div class="wr-charts-row">
+        <div class="wr-chart-card">
+          <div class="wr-chart-title">Work Status</div>
+          <div id="wr-chart-workstatus"></div>
+        </div>
+        <div class="wr-chart-card">
+          <div class="wr-chart-title">Invoice Status</div>
+          <div id="wr-chart-invoicestatus"></div>
+        </div>
+        <div class="wr-chart-card">
+          <div class="wr-chart-title">Amount by Work Type</div>
+          <div id="wr-chart-worktype"></div>
+        </div>
+      </div>
+
+      <div class="wr-filter-row">
+        <input type="text" id="wr-search" placeholder="Search client, group, work type…" oninput="wrRenderTable()">
+        <select id="wr-filter-workstatus" onchange="wrRenderTable()">
+          <option value="">All Work Status</option>
+          <option>Pending</option>
+          <option>In Progress</option>
+          <option>Completed</option>
+        </select>
+        <select id="wr-filter-invoicestatus" onchange="wrRenderTable()">
+          <option value="">All Invoice Status</option>
+          <option>Not Invoiced</option>
+          <option>Invoiced</option>
+          <option>Partially Paid</option>
+          <option>Paid</option>
+        </select>
+      </div>
+
+      <div class="wr-table-wrap">
+        <table class="wr-table" id="wr-table">
+          <thead>
+            <tr>
+              <th>Date</th><th>Work Type</th><th>Group</th><th>Client</th><th>Done By</th>
+              <th>UDIN</th><th>Total</th><th>Work Status</th><th>Invoice Status</th>
+              <th>Invoiced</th><th>Received</th><th>Balance</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="wr-table-body"></tbody>
+        </table>
+      </div>
+
+      <div class="wr-dash-footer">
+        <div class="wr-note">Sheet rows are live · new entries added here are local-only until added to the sheet</div>
+        <button class="wr-btn wr-btn-ghost" onclick="wrExportCsv()">Export CSV</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div class="wr-toast" id="wr-toast"></div>
+
+<script>
+let wrEntries = [];
+let wrLocalEntries = [];
+const STORAGE_KEY = 'work-register-entries';
+
+const WR_SHEET_ID = '14N_wngg3Z-4wJVTStFebUYUT2XVP1d2VfxqHxjt2Dt0';
+const WR_SHEET_GID = '0';
+const WR_CSV_URL = `https://docs.google.com/spreadsheets/d/${WR_SHEET_ID}/export?format=csv&gid=${WR_SHEET_GID}`;
+const WR_WRITE_URL = 'https://script.google.com/macros/s/AKfycbwvSoAY3Itt9_pQOPxRzxGy1Q7cgI6itA6kPh6-mHfrSmbSXmYzb0tJW92lCQmAMjMrBw/exec';
+function wrSetSheetStatus(text, tone){
+  const el = document.getElementById('wr-sheet-status-text');
+  if(el) el.textContent = text;
+  const box = document.getElementById('wr-sheet-status');
+  if(box) box.style.background = tone==='error' ? 'var(--clay)' : 'var(--navy-soft)';
+}
+
+function wrNormKey(k){
+  return (k||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+}
+
+function wrFindCol(headerMap, ...candidates){
+  for(const c of candidates){
+    const key = wrNormKey(c);
+    if(headerMap[key] !== undefined) return headerMap[key];
+  }
+  return null;
+}
+
+function wrMapWorkStatus(raw){
+  const s = (raw||'').trim().toLowerCase();
+  if(s==='completed') return 'Completed';
+  if(s==='wip' || s==='in progress') return 'In Progress';
+  return 'Pending';
+}
+
+function wrDeriveInvoiceStatus(total, received, invoiceRaised){
+  const t = Number(total)||0, r = Number(received)||0;
+  if(r>0 && r>=t && t>0) return 'Paid';
+  if(r>0) return 'Partially Paid';
+  if(invoiceRaised && String(invoiceRaised).trim()) return 'Invoiced';
+  return 'Not Invoiced';
+}
+
+function wrParseDate(raw){
+  if(!raw) return '';
+  const m = String(raw).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m){
+    const [_, d, mo, y] = m;
+    return `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  }
+  const d2 = new Date(raw);
+  return isNaN(d2) ? '' : d2.toISOString().slice(0,10);
+}
+
+function wrLoadFromSheet(){
+  wrSetSheetStatus('Connecting to Google Sheet…');
+  document.getElementById('wr-sheet-status').style.display = 'flex';
+
+  Papa.parse(WR_CSV_URL, {
+    download: true,
+    header: false,
+    skipEmptyLines: true,
+    error: function(err) {
+      console.error('Sheet fetch failed', err);
+      wrSetSheetStatus('Could not reach the sheet — Failed to fetch. Showing local entries only.', 'error');
+      wrEntries = [...wrLocalEntries];
+      wrUpdateCount();
+      wrRenderDash();
+    },
+    complete: function(results) {
+      const rows = results.data;
+      if(!rows || !rows.length) {
+        wrSetSheetStatus('Empty sheet data received.', 'error');
+        return;
+      }
+
+      const headerRow = rows[0].map(h => wrNormKey(h));
+      const headerMap = {};
+      headerRow.forEach((h,i)=>{ if(h && headerMap[h]===undefined) headerMap[h]=i; });
+
+      const col = {
+        date: wrFindCol(headerMap,'date'),
+        workType: wrFindCol(headerMap,'work type'),
+        group: wrFindCol(headerMap,'group'),
+        name: wrFindCol(headerMap,'name','client name'),
+        desc: wrFindCol(headerMap,'work description'),
+        doneBy: wrFindCol(headerMap,'work done by'),
+        udinApp: wrFindCol(headerMap,'udin applicablilty','udin applicability'),
+        udinNo: wrFindCol(headerMap,'udin no'),
+        amount: wrFindCol(headerMap,'amount'),
+        challan: wrFindCol(headerMap,'challan amount'),
+        total: wrFindCol(headerMap,'total amount'),
+        status: wrFindCol(headerMap,'work status'),
+        remarks: wrFindCol(headerMap,'remarks'),
+        invoiceFrom: wrFindCol(headerMap,'invoice from'),
+        invoiceRaised: wrFindCol(headerMap,'invoice raised','invoice status'),
+        received: wrFindCol(headerMap,'amount received')
+      };
+
+      const num = v => { const n = parseFloat(String(v||'').replace(/,/g,'')); return isNaN(n)?0:n; };
+
+      const sheetEntries = rows.slice(1)
+        .filter(r => col.name != null && r[col.name] && String(r[col.name]).trim())
+        .map((r,i)=>{
+          const total = col.total!=null ? num(r[col.total]) : (num(r[col.amount])+num(r[col.challan]));
+          const received = col.received!=null ? num(r[col.received]) : 0;
+          return {
+            id: 'sheet_' + i,
+            source: 'sheet',
+            date: wrParseDate(col.date!=null ? r[col.date] : ''),
+            workType: col.workType!=null ? (r[col.workType]||'').trim() : '',
+            group: col.group!=null ? (r[col.group]||'').trim() : '',
+            clientName: col.name!=null ? (r[col.name]||'').trim() : '',
+            workDescription: col.desc!=null ? (r[col.desc]||'').trim() : '',
+            workDoneBy: col.doneBy!=null ? (r[col.doneBy]||'').trim() : '',
+            udinApplicability: col.udinApp!=null && (r[col.udinApp]||'').trim().toLowerCase()==='yes' ? 'Yes' : 'No',
+            udinNo: col.udinNo!=null ? (r[col.udinNo]||'').trim() : '',
+            amount: col.amount!=null ? num(r[col.amount]) : 0,
+            challanAmount: col.challan!=null ? num(r[col.challan]) : 0,
+            totalAmount: total,
+            workStatus: wrMapWorkStatus(col.status!=null ? r[col.status] : ''),
+            invoiceStatus: wrDeriveInvoiceStatus(total, received, col.invoiceRaised!=null ? r[col.invoiceRaised] : ''),
+            invoiceAmount: total,
+            amountReceived: received,
+            balanceDue: total - received,
+            remarks: col.remarks!=null ? (r[col.remarks]||'').trim() : '',
+            invoiceDate: '',
+            invoiceFrom: col.invoiceFrom!=null ? (r[col.invoiceFrom]||'').trim() : ''
+          };
+        });
+
+      wrEntries = [...sheetEntries, ...wrLocalEntries];
+      wrSetSheetStatus(`Connected · ${sheetEntries.length} rows from sheet · synced ${new Date().toLocaleTimeString()}`);
+      wrUpdateCount();
+      wrRenderDash();
+    }
+  });
+}
+
+async function wrLoad(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, true);
+    wrLocalEntries = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){
+    wrLocalEntries = [];
+  }
+  wrEntries = [...wrLocalEntries];
+  wrUpdateCount();
+  wrRenderDash();
+  wrLoadFromSheet();
+}
+
+async function wrSave(){
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(wrLocalEntries), true);
+  }catch(e){
+    console.error('Storage error', e);
+  }
+}
+
+function wrUpdateCount(){
+  document.getElementById('wr-live-count').textContent = wrEntries.length + (wrEntries.length===1?' entry logged':' entries logged');
+}
+
+function wrSwitchTab(tab){
+  document.getElementById('wr-tab-form').classList.toggle('active', tab==='form');
+  document.getElementById('wr-tab-dash').classList.toggle('active', tab==='dash');
+  document.getElementById('wr-view-form').style.display = tab==='form' ? 'block':'none';
+  document.getElementById('wr-view-dash').style.display = tab==='dash' ? 'block':'none';
+  if(tab==='dash') wrRenderDash();
+}
+
+function wrToggleUdin(){
+  const yes = document.getElementById('f-udinApplicability').value === 'Yes';
+  document.getElementById('f-udinNo-wrap').style.display = yes ? 'flex' : 'none';
+}
+
+function wrRecalc(){
+  const amt = parseFloat(document.getElementById('f-amount').value) || 0;
+  const challan = parseFloat(document.getElementById('f-challanAmount').value) || 0;
+  document.getElementById('f-totalAmount').value = (amt + challan) || '';
+
+  const inv = parseFloat(document.getElementById('f-invoiceAmount').value) || 0;
+  const rec = parseFloat(document.getElementById('f-amountReceived').value) || 0;
+  document.getElementById('f-balanceDue').value = (inv - rec) || 0;
+}
+
+function wrShowToast(msg){
+  const t = document.getElementById('wr-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function wrClearForm(){
+  ['f-date','f-workType','f-group','f-clientName','f-workDescription','f-workDoneBy',
+   'f-udinNo','f-amount','f-challanAmount','f-totalAmount','f-invoiceAmount',
+   'f-amountReceived','f-balanceDue','f-remarks','f-invoiceDate','f-invoiceFrom'].forEach(id=>{
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-udinApplicability').value = 'No';
+  document.getElementById('f-workStatus').value = 'Pending';
+  document.getElementById('f-invoiceStatus').value = 'Not Invoiced';
+  wrToggleUdin();
+}
+
+async function wrSubmitEntry(){
+  const clientName = document.getElementById('f-clientName').value.trim();
+  if(!clientName){
+    wrShowToast('Client name is required');
+    return;
+  }
+  const rawDate = document.getElementById('f-date').value;
+  const sheetDate = rawDate ? (()=>{ const [y,m,d]=rawDate.split('-'); return `${d}/${m}/${y}`; })() : '';
+
+  const payload = {
+    date: sheetDate,
+    workType: document.getElementById('f-workType').value.trim(),
+    group: document.getElementById('f-group').value.trim(),
+    clientName: clientName,
+    workDescription: document.getElementById('f-workDescription').value.trim(),
+    workDoneBy: document.getElementById('f-workDoneBy').value.trim(),
+    udinApplicability: document.getElementById('f-udinApplicability').value,
+    udinNo: document.getElementById('f-udinNo').value.trim(),
+    amount: parseFloat(document.getElementById('f-amount').value) || 0,
+    challanAmount: parseFloat(document.getElementById('f-challanAmount').value) || 0,
+    totalAmount: parseFloat(document.getElementById('f-totalAmount').value) || 0,
+    workStatus: document.getElementById('f-workStatus').value,
+    remarks: document.getElementById('f-remarks').value.trim(),
+    invoiceFrom: document.getElementById('f-invoiceFrom').value.trim(),
+    invoiceRaised: document.getElementById('f-invoiceStatus').value,
+    amountReceived: parseFloat(document.getElementById('f-amountReceived').value) || 0
+  };
+
+  const btn = document.querySelector('.wr-btn-primary');
+  const prevLabel = btn.textContent;
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+
+  try{
+    await fetch(WR_WRITE_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    wrShowToast('Saved to Google Sheet');
+    wrClearForm();
+    await new Promise(r => setTimeout(r, 1200));
+    wrLoadFromSheet();
+    wrSwitchTab('dash');
+  }catch(e){
+    console.error('Write failed', e);
+    wrShowToast('Could not reach the sheet — entry not saved. Check your connection and try again.');
+  }finally{
+    btn.textContent = prevLabel;
+    btn.disabled = false;
+  }
+}
+
+async function wrDeleteEntry(id){
+  wrShowToast('Edit or delete this row directly in the Google Sheet or AppSheet');
+}
+
+function wrFmt(n){
+  return '₹' + (Number(n)||0).toLocaleString('en-IN');
+}
+
+function wrPillClass(status, kind){
+  const map = {
+    work:{'Pending':'wr-pill-pending','In Progress':'wr-pill-progress','Completed':'wr-pill-completed'},
+    invoice:{'Not Invoiced':'wr-pill-notinvoiced','Invoiced':'wr-pill-invoiced','Partially Paid':'wr-pill-partial','Paid':'wr-pill-paid'}
+  };
+  return (map[kind] && map[kind][status]) || '';
+}
+
+function wrDonutSvg(data, size){
+  size = size || 140;
+  const total = data.reduce((s,d)=>s+d.value,0);
+  const r = size/2 - 12;
+  const cx = size/2, cy = size/2;
+  let angle = -90;
+  let paths = '';
+  if(total === 0){
+    paths = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#D6D9CC" stroke-width="18"/>`;
+  } else {
+    data.forEach(d=>{
+      if(d.value <= 0) return;
+      const frac = d.value/total;
+      const sweep = frac*360;
+      const largeArc = sweep > 180 ? 1 : 0;
+      const x1 = cx + r*Math.cos(angle*Math.PI/180);
+      const y1 = cy + r*Math.sin(angle*Math.PI/180);
+      const endAngle = angle + sweep;
+      const x2 = cx + r*Math.cos(endAngle*Math.PI/180);
+      const y2 = cy + r*Math.sin(endAngle*Math.PI/180);
+      paths += `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}" fill="none" stroke="${d.color}" stroke-width="18" stroke-linecap="butt"/>`;
+      angle = endAngle;
+    });
+  }
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${paths}
+    <text x="${cx}" y="${cy-2}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="18" font-weight="600" fill="#152A3A">${total}</text>
+    <text x="${cx}" y="${cy+14}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B655D">ENTRIES</text>
+  </svg>`;
+}
+
+function wrBarChart(data, maxWidth){
+  maxWidth = maxWidth || 100;
+  const max = Math.max(...data.map(d=>d.value), 1);
+  return data.map(d=>{
+    const pct = Math.round((d.value/max)*100);
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:#5B655D; margin-bottom:3px;">
+        <span>${d.label}</span><span style="font-family:'IBM Plex Mono',monospace; color:#152A3A;">${wrFmt(d.value)}</span>
+      </div>
+      <div style="background:#E2E5D9; border-radius:4px; height:8px;">
+        <div style="width:${pct}%; background:${d.color}; height:8px; border-radius:4px;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function wrRenderDash(){
+  const totalValue = wrEntries.reduce((s,e)=>s+(e.totalAmount||0),0);
+  const totalInvoiced = wrEntries.reduce((s,e)=>s+(e.invoiceAmount||0),0);
+  const totalReceived = wrEntries.reduce((s,e)=>s+(e.amountReceived||0),0);
+  const totalDue = wrEntries.reduce((s,e)=>s+(e.balanceDue||0),0);
+  const pendingCount = wrEntries.filter(e=>e.workStatus==='Pending').length;
+
+  document.getElementById('wr-kpi-row').innerHTML = `
+    <div class="wr-kpi"><div class="wr-kpi-label">Total Work Value</div><div class="wr-kpi-value">${wrFmt(totalValue)}</div></div>
+    <div class="wr-kpi"><div class="wr-kpi-label">Total Invoiced</div><div class="wr-kpi-value">${wrFmt(totalInvoiced)}</div></div>
+    <div class="wr-kpi wr-kpi-teal"><div class="wr-kpi-label">Amount Received</div><div class="wr-kpi-value">${wrFmt(totalReceived)}</div></div>
+    <div class="wr-kpi wr-kpi-clay"><div class="wr-kpi-label">Balance Due</div><div class="wr-kpi-value">${wrFmt(totalDue)}</div></div>
+    <div class="wr-kpi"><div class="wr-kpi-label">Pending Work</div><div class="wr-kpi-value">${pendingCount}</div></div>
+  `;
+
+  const wsCounts = {'Pending':0,'In Progress':0,'Completed':0};
+  wrEntries.forEach(e=>{ if(wsCounts[e.workStatus] !== undefined) wsCounts[e.workStatus]++; });
+  const wsColors = {'Pending':'#C98A3B','In Progress':'#2E6DA4','Completed':'#2F7A6F'};
+  const wsData = Object.keys(wsCounts).map(k=>({label:k, value:wsCounts[k], color:wsColors[k]}));
+  document.getElementById('wr-chart-workstatus').innerHTML = wrDonutSvg(wsData) +
+    '<div class="wr-legend">' + wsData.map(d=>`<div class="wr-legend-item"><span class="wr-legend-swatch" style="background:${d.color}"></span>${d.label}<b>${d.value}</b></div>`).join('') + '</div>';
+
+  const isCounts = {'Not Invoiced':0,'Invoiced':0,'Partially Paid':0,'Paid':0};
+  wrEntries.forEach(e=>{ if(isCounts[e.invoiceStatus] !== undefined) isCounts[e.invoiceStatus]++; });
+  const isColors = {'Not Invoiced':'#999999','Invoiced':'#2E6DA4','Partially Paid':'#C98A3B','Paid':'#2F7A6F'};
+  const isData = Object.keys(isCounts).map(k=>({label:k, value:isCounts[k], color:isColors[k]}));
+  document.getElementById('wr-chart-invoicestatus').innerHTML = wrDonutSvg(isData) +
+    '<div class="wr-legend">' + isData.map(d=>`<div class="wr-legend-item"><span class="wr-legend-swatch" style="background:${d.color}"></span>${d.label}<b>${d.value}</b></div>`).join('') + '</div>';
+
+  const byType = {};
+  wrEntries.forEach(e=>{
+    const key = e.workType || 'Unspecified';
+    byType[key] = (byType[key]||0) + (e.totalAmount||0);
+  });
+  const typeColors = ['#152A3A','#2F7A6F','#C98A3B','#B5533C','#2E6DA4','#6B4C9A'];
+  const typeData = Object.keys(byType).sort((a,b)=>byType[b]-byType[a]).slice(0,6).map((k,i)=>({label:k, value:byType[k], color:typeColors[i%typeColors.length]}));
+  document.getElementById('wr-chart-worktype').innerHTML = typeData.length ? wrBarChart(typeData) : '<div style="color:#5B655D; font-size:12.5px;">No data yet</div>';
+
+  wrRenderTable();
+}
+
+function wrRenderTable(){
+  const search = (document.getElementById('wr-search').value || '').toLowerCase();
+  const wsFilter = document.getElementById('wr-filter-workstatus').value;
+  const isFilter = document.getElementById('wr-filter-invoicestatus').value;
+
+  let filtered = wrEntries.filter(e=>{
+    if(wsFilter && e.workStatus !== wsFilter) return false;
+    if(isFilter && e.invoiceStatus !== isFilter) return false;
+    if(search){
+      const hay = [e.clientName,e.group,e.workType,e.workDoneBy,e.remarks].join(' ').toLowerCase();
+      if(!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  filtered = filtered.slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+
+  const body = document.getElementById('wr-table-body');
+  if(filtered.length === 0){
+    body.innerHTML = `<tr><td colspan="13"><div class="wr-empty"><b>No entries yet</b>Log your first engagement from the New Entry tab.</div></td></tr>`;
+    return;
+  }
+
+  body.innerHTML = filtered.map(e=>`
+    <tr>
+      <td>${e.date||'—'}</td>
+      <td>${e.workType||'—'}</td>
+      <td>${e.group||'—'}</td>
+      <td>${e.clientName||'—'}</td>
+      <td>${e.workDoneBy||'—'}</td>
+      <td>${e.udinApplicability==='Yes' ? (e.udinNo||'Yes') : '—'}</td>
+      <td class="wr-num">${wrFmt(e.totalAmount)}</td>
+      <td><span class="wr-pill ${wrPillClass(e.workStatus,'work')}">${e.workStatus}</span></td>
+      <td><span class="wr-pill ${wrPillClass(e.invoiceStatus,'invoice')}">${e.invoiceStatus}</span></td>
+      <td class="wr-num">${wrFmt(e.invoiceAmount)}</td>
+      <td class="wr-num">${wrFmt(e.amountReceived)}</td>
+      <td class="wr-num">${wrFmt(e.balanceDue)}</td>
+      <td><button class="wr-del-btn" onclick="wrDeleteEntry('${e.id}')" title="Delete">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+function wrExportCsv(){
+  const headers = ['Date','Work Type','Group','Client Name','Work Description','Work Done By','UDIN Applicablilty','UDIN No','Amount','Challan Amount','Total Amount','Work Status','Invoice Status','Invoice Amount','Amount Received','Balance Due','Remarks','Invoice Date','Invoice from'];
+  const rows = wrEntries.map(e=>[
+    e.date, e.workType, e.group, e.clientName, e.workDescription, e.workDoneBy,
+    e.udinApplicability, e.udinNo, e.amount, e.challanAmount, e.totalAmount,
+    e.workStatus, e.invoiceStatus, e.invoiceAmount, e.amountReceived, e.balanceDue,
+    e.remarks, e.invoiceDate, e.invoiceFrom
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v=>{
+    const s = (v===undefined || v===null) ? '' : String(v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+  }).join(',')).join('\n');
+
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'work-register-export.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+wrLoad();
+</script>
